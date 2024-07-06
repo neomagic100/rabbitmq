@@ -1,47 +1,38 @@
 #!/root/rabbitmq-scripts/env_pika/bin/python3
-from PikaConn import PikaConn
-import sys, os, time
+from PikaConnReceiver import PikaConnReceiver
+import sys, os
 import click
 
-def main(conn, queueName):
-	def callback(ch, method, properties, body):
-		print(f" [x] Received {body.decode()}")
-		time.sleep(body.count(b'.'))
-		print(" [x] Done")
-		ch.basic_ack(delivery_tag = method.delivery_tag)
-
-	conn.getChannel().basic_consume(queueName, callback)
-
-	print('waiting for messages on {}'.format(queueName if queueName.strip() != "" \
-		else "temporary queue"))
-	conn.getChannel().start_consuming()
-
 @click.command()
-@click.option('--queue', '-q', default='queue name', show_default=True)
+@click.option('--queue', '-q', default='', show_default=True)
+@click.option('--durable', '-d', default=False, show_default=True)
 @click.option('--exchange', '-e', default='', show_default=True)
 @click.option('--type', '-t', default='', show_default=True)
 @click.option('--exclusive', '-x', default=False, show_default=True)
-@click.option('--durable', '-d', default=False, show_default=True)
-def createConnection(queue = "", exchange = "", type = "", exclusive = False,
-	durable = False):
-	exchangeTuple=(exchange, type)
-	conn = PikaConn(queueName = queue, 
-					exchange = exchangeTuple, 
-					durable = durable,
-					exclusive = exclusive,
-					sending = False)
-	return conn
+@click.option('--severity', '-s', default=(), show_default=True, multiple = True)
+@click.option('--topic', '-p', default=(), show_default=True, multiple = True)
+def receive(queue, durable, exchange, type, exclusive, severity, topic):
+    conn = PikaConnReceiver(queueName=queue, 
+					exchange=(exchange, type),
+					durable=durable,
+	        		exclusive=exclusive,
+                    severity=severity,
+		    topic = topic)
+    conn.consume()
+    return conn
 
+connection = None
 
 try:
-	conn = createConnection()
-	main(conn, conn.queueName)
+    connection = receive()
 except KeyboardInterrupt:
 	print('user interrupted')
 	try:
+		print("sys.exit")
 		sys.exit(0)
 	except SystemExit:
+		print("SystemExit")
 		os._exit(0)
 	finally:
-		if conn:
-			conn.close()
+		connection.close()
+		print("Connection closed")
