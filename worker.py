@@ -10,8 +10,6 @@ import click
 @click.option('--exclusive', '-x', default=False, show_default=True)
 @click.option('--durable', '-d', default=False, show_default=True)
 def createConnection(queue, exchange, type, exclusive, durable):
-	s = f"{queue}"
-	print(s)
 	exchangeTuple=(exchange, type)
 	conn = PikaConn(queueName = queue, 
 					exchange = exchangeTuple, 
@@ -47,7 +45,9 @@ def subscribe(conn):
 if __name__ == "__main__":
 	try:
 		conn = createConnection()
-		conn.subscribe()
+		print(conn.queueName)
+		subscribe(conn)
+		print("subscribed")
 		conn.channel.start_consuming()
 	except KeyboardInterrupt:
 		print('user interrupted')
