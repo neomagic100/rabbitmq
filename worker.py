@@ -1,4 +1,5 @@
 #!/root/rabbitmq-scripts/env_pika/bin/python3
+import pika
 from PikaConn import PikaConn
 import sys, os, time
 import click
@@ -18,22 +19,24 @@ def createConnection(queue, exchange, type, exclusive, durable):
 					sending = False)
 	return conn
 
-def subscribe(conn):
+def subscribe(pc):
+    connection = pika.BlockingConnection(pc.params)
+	channel = connection.channel()
 	if conn.isExchange:
-		conn.channel.exchange_declare(exchange = conn.exchangeName, exchange_type= conn.exchangeType)
-		result = conn.channel.queue_declare("", exclusive=conn.exclusive)
+		channel.exchange_declare(exchange = conn.exchangeName, exchange_type= conn.exchangeType)
+		result = channel.queue_declare("", exclusive=conn.exclusive)
 		tempQueueName = result.method.queue
-		conn.channel.queue_bind(exchange=conn.exchangeName, queue=tempQueueName)
+		channel.queue_bind(exchange=conn.exchangeName, queue=tempQueueName)
 		print(' [*] Waiting for logs. To exit press CTRL+C')
 
 		def callback(ch, method, properties, body):
 			print(f" [x] {body}")
 
-		conn.channel.basic_consume(
+		channel.basic_consume(
 			queue=tempQueueName, on_message_callback=callback, auto_ack=True)
 
 	else:
-		conn.channel.queue_declare(queue=conn.queueName, durable=conn.durable)
+		channel.queue_declare(queue=conn.queueName, durable=conn.durable)
 		print(' [*] Waiting for logs. To exit press CTRL+C')
 
 		def callback(ch, method, properties, body):
@@ -42,15 +45,17 @@ def subscribe(conn):
 			print(" [x] Done")
 			ch.basic_ack(delivery_tag=method.delivery_tag)
 
-		conn.channel.basic_qos(prefetch_count=1)
-		conn.channel.basic_consume(queue=conn.getQueueName(), on_message_callback=callback)
+		channel.basic_qos(prefetch_count=1)
+		channel.basic_consume(queue=conn.getQueueName(), on_message_callback=callback)
+  
+	return channel
 
 try:
 	conn = createConnection()
 	print(conn.queueName)
-	subscribe(conn)
+	channel = subscribe(conn)
 	print("subscribed")
-	conn.channel.start_consuming()
+	channel.start_consuming()
 except KeyboardInterrupt:
 	print('user interrupted')
 	try:

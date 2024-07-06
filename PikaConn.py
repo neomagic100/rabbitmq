@@ -7,7 +7,7 @@ class PikaConn:
 	
 	def __init__(self, queueName = "", exchange = (), durable=True, exclusive=False, sending=False):
 		creds = pika.credentials.PlainCredentials(config.USER, config.SECRET)
-		params = pika.ConnectionParameters(config.HOST)
+		self.params = pika.ConnectionParameters(config.HOST)
 		self.queueName = queueName
 		self.durable = durable
 		self.exclusive = exclusive
@@ -16,9 +16,9 @@ class PikaConn:
 		self.exchangeType = "" if not self.isExchange else exchange[1]
 		# if not self.isExchange else \
 			#pika.ConnectionParameters(config.HOST, config.PORT, config.VENV, creds)
-
-		self.connection = pika.BlockingConnection(params)
-		self.channel = self.connection.channel()	
+		if sending:
+			self.connection = pika.BlockingConnection(self.params)
+			self.channel = self.connection.channel()	
 		# self.activeQueue = None
   
 		# if self.isExchange:
