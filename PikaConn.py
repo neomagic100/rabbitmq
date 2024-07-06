@@ -14,8 +14,9 @@ class PikaConn:
 		self.isExchange = exchange != PikaConn.DEFAULT_EXCHANGE
 		self.exchangeName = "" if not self.isExchange else exchange[0]
 		self.exchangeType = "" if not self.isExchange else exchange[1]
-		# if not self.isExchange else \
-			#pika.ConnectionParameters(config.HOST, config.PORT, config.VENV, creds)
+		if not self.isExchange:
+			self.params = pika.ConnectionParameters(config.HOST, config.PORT, config.VENV, creds)
+		
 		if sending:
 			self.connection = pika.BlockingConnection(self.params)
 			self.channel = self.connection.channel()	
@@ -25,6 +26,7 @@ class PikaConn:
 		# 	self.channel.exchange_declare(exchange = self.exchangeName, exchange_type= self.exchangeType)
 		# elif not self.isExchange and self.queueName != "":
 		# 	self.channel.queue_declare(queue=self.queueName, durable=durable)
+		print(f'leaving init, q {self.queueName} eN {self.exchangeName} eT {self.exchangeType}')
 	
 	def setChannel(self):
 		self.channel.exchange_declare(exchange=self.exchangeName, exchange_type=self.exchangeType)
