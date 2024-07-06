@@ -2,6 +2,10 @@
 from PikaConn import PikaConn
 import sys, os, time
 import click
+import asyncio
+
+async def getMessage(conn):
+	await conn.subscribe()
 
 @click.command()
 @click.option('--queue', '-q', default='queue name', show_default=True)
@@ -10,6 +14,8 @@ import click
 @click.option('--exclusive', '-x', default=False, show_default=True)
 @click.option('--durable', '-d', default=False, show_default=True)
 def createConnection(queue, exchange, type, exclusive, durable):
+	s = f"{queue}"
+	print(s)
 	exchangeTuple=(exchange, type)
 	conn = PikaConn(queueName = queue, 
 					exchange = exchangeTuple, 
@@ -21,7 +27,7 @@ def createConnection(queue, exchange, type, exclusive, durable):
 if __name__ == "__main__":
 	try:
 		conn = createConnection()
-		conn.subscribe()
+		asyncio.run(getMessage(conn))
 	except KeyboardInterrupt:
 		print('user interrupted')
 		try:

@@ -1,8 +1,10 @@
 import pika
 import time
+import asyncio
 from config import config
 
 class PikaConn:
+	DEFAULT_EXCHANGE = ("","")
 	
 	def __init__(self, queueName = "", exchange = (), durable=True, exclusive=False, sending=False):
 		creds = pika.credentials.PlainCredentials(config.USER, config.SECRET)
@@ -10,7 +12,7 @@ class PikaConn:
 		self.queueName = queueName
 		self.durable = durable
 		self.exclusive = exclusive
-		self.isExchange = exchange != ()
+		self.isExchange = exchange != PikaConn.DEFAULT_EXCHANGE
 		self.exchangeName = "" if not self.isExchange else exchange[0]
 		self.exchangeType = "" if not self.isExchange else exchange[1]
 		# if not self.isExchange else \
@@ -54,7 +56,7 @@ class PikaConn:
 
 		print (f" [x] Sent '{body}'")
   
-	def subscribe(self):
+	async def subscribe(self):
 		if self.isExchange:
 			tempQueueName = self.activeQueue.method.queue
 			self.channel.queue_bind(exchange=self.exchangeName, queue=tempQueueName)
@@ -78,8 +80,11 @@ class PikaConn:
 			self.channel.basic_qos(prefetch_count=1)
 			self.channel.basic_consume(queue=self.queueName, on_message_callback=callback)
 		
-		self.channel.start_consuming()
-
+	#	self.channel.start_consuming()
+		asyncio.run(self.consume())
+	
+	async def consume(self):
+		await self.channel.start_consuming()
 	def getChannel(self):
 		return self.channel
 
