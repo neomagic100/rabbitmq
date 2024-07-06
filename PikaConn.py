@@ -55,29 +55,30 @@ class PikaConn:
 
 		print (f" [x] Sent '{body}'")
   
-	def subscribe(self):
-		if self.isExchange:
-			tempQueueName = self.activeQueue.method.queue
-			self.channel.queue_bind(exchange=self.exchangeName, queue=tempQueueName)
-			print(' [*] Waiting for logs. To exit press CTRL+C')
+	# def subscribe(self):
+	# 	if self.isExchange:
+	# 		tempQueueName = self.activeQueue.method.queue
+	# 		self.channel.queue_bind(exchange=self.exchangeName, queue=tempQueueName)
+	# 		print(' [*] Waiting for logs. To exit press CTRL+C')
 
-			def callback(ch, method, properties, body):
-				print(f" [x] {body}")
+	# 		def callback(ch, method, properties, body):
+	# 			print(f" [x] {body}")
     
-			self.channel.basic_consume(
-				queue=tempQueueName, on_message_callback=callback, auto_ack=True)
+	# 		self.channel.basic_consume(
+	# 			queue=tempQueueName, on_message_callback=callback, auto_ack=True)
+	# 		return callback
 
-		else:
-			print(' [*] Waiting for logs. To exit press CTRL+C')
+	# 	else:
+	# 		print(' [*] Waiting for logs. To exit press CTRL+C')
 
-			def callback(ch, method, properties, body):
-				print(f" [x] Received {body.decode()}")
-				time.sleep(body.count(b'.'))
-				print(" [x] Done")
-				ch.basic_ack(delivery_tag=method.delivery_tag)
+	# 		def callback(ch, method, properties, body):
+	# 			print(f" [x] Received {body.decode()}")
+	# 			time.sleep(body.count(b'.'))
+	# 			print(" [x] Done")
+	# 			ch.basic_ack(delivery_tag=method.delivery_tag)
     
-			self.channel.basic_qos(prefetch_count=1)
-			self.channel.basic_consume(queue=self.queueName, on_message_callback=callback)
+	# 		self.channel.basic_qos(prefetch_count=1)
+	# 		self.channel.basic_consume(queue=self.queueName, on_message_callback=callback)
 	
 	def getChannel(self):
 		return self.channel
