@@ -1,5 +1,6 @@
 #!/root/rabbitmq-scripts/env_pika/bin/python3
 from PikaConn import PikaConn
+from config import config
 import sys
 import click
 
