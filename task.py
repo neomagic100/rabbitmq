@@ -19,6 +19,6 @@ def send(message, queue, durable, exchange, type, exclusive):
 	conn.publish(message)
 	return conn
 
-if __name__ == "__main__":
-	conn = send()
-	conn.close()
+
+conn = send()
+conn.close()
