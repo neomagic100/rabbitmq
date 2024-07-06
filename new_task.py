@@ -6,15 +6,23 @@ import click
 
 @click.command()
 @click.option('--message', '-m', default='insert message here', show_default=True)
-@click.option('--queue', '-q', default='queue name', show_default=True)
-def send(message, queue):
-	conn = PikaConn(queue)
-	message = message or "Hello workers!"
-	conn.pub('', queue, message, persist=True)
+@click.option('--queue', '-q', default='', show_default=True)
+@click.option('--durable', '-d', default=False, show_default=True)
+@click.option('--exchange', '-e', default='', show_default=True)
+@click.option('--type', '-t', default='', show_default=True)
+@click.option('--exclusive', '-x', default=False, show_default=True)
+@click.option('--persist', '-p', default=False, show_default=True)
+def send(message, queue, durable, exchange, type, exclusive, persist):
+	persist = True if persist.lower() == "true" else False
+	exclusive = True if exclusive.lower() == "true" else False
+	durable = True if durable.lower() == "true" else False
+	conn = PikaConn(queueName=queue, 
+					exchange=(exchangeName, exchangeType),
+					durable=durable,
+					exclusive=exclusive,
+					sending=True)
+	conn.publish(message, persist = persist)
 	print(f" [x] Sent {message}")
-	with open("pika-queue.dat", "w") as f:
-		f.write(queue)
 
-
-send()
-
+if __name__ == "__main__":
+	send(sys.argv)
