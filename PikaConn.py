@@ -6,12 +6,13 @@ from config import config
 class PikaConnSender:
 	DEFAULT_EXCHANGE = ("","")
 	
-	def __init__(self, queueName = "", exchange = (), durable=True, exclusive=False):
+	def __init__(self, queueName = "", exchange = (), durable=True, exclusive=False, severity=''):
 		creds = pika.credentials.PlainCredentials(config.USER, config.SECRET)
 		self.params = pika.ConnectionParameters(config.HOST)
 		self.queueName = queueName
 		self.durable = durable
 		self.exclusive = exclusive
+		self.severity = severity
 		self.isExchange = exchange != PikaConnSender.DEFAULT_EXCHANGE
 		self.exchangeName = "" if not self.isExchange else exchange[0]
 		self.exchangeType = "" if not self.isExchange else exchange[1]
@@ -37,7 +38,7 @@ class PikaConnSender:
 	def publish(self, body):
 		if self.isExchange:
 			self.channel.basic_publish(
-				exchange=self.exchangeName, routing_key="", body=body
+				exchange=self.exchangeName, routing_key=self.severity, body=body
 			)
 		else:
 			if self.durable:
@@ -57,12 +58,13 @@ class PikaConnSender:
 		return self.connection
 
 class PikaConnReceiver:
-	def __init__(self, queueName = "", exchange = (), durable=True, exclusive=False):
+	def __init__(self, queueName = "", exchange = (), durable=True, exclusive=False, severity=[]):
 		creds = pika.credentials.PlainCredentials(config.USER, config.SECRET)
 		self.params = pika.ConnectionParameters(config.HOST)
 		self.queueName = queueName
 		self.durable = durable
 		self.exclusive = exclusive
+		self.severity = severity
 		self.isExchange = exchange != PikaConnSender.DEFAULT_EXCHANGE
 		self.exchangeName = "" if not self.isExchange else exchange[0]
 		self.exchangeType = "" if not self.isExchange else exchange[1]
@@ -84,18 +86,31 @@ class PikaConnReceiver:
 
 		result = channel.queue_declare(queue='', exclusive=True)
 		queue_name = result.method.queue
+		if self.severity != []:
+			self.consumeSeverity(queue_name)
+		else:
+			channel.queue_bind(exchange=self.exchangeName, queue=queue_name)
+		
+			def callback(ch, method, properties, body):
+				print(f" [x] {body}")
 
-		channel.queue_bind(exchange=self.exchangeName, queue=queue_name)
+			print(' [*] Waiting for logs. To exit press CTRL+C')
+
+			channel.basic_consume(
+				queue=queue_name, on_message_callback=callback, auto_ack=True)
+
+		channel.start_consuming()
+	
+	def consumeSeverity(self, queue_name):
+		for sev in self.severity:
+			channel.queue_bind(exchange=self.exchangeName, queue=queue_name, routing_key=sev)
+		def callback(ch, method, properties, body):
+			print(f" [x] {method.routing_key}:{body}")
 
 		print(' [*] Waiting for logs. To exit press CTRL+C')
 
-		def callback(ch, method, properties, body):
-			print(f" [x] {body}")
-
 		channel.basic_consume(
 			queue=queue_name, on_message_callback=callback, auto_ack=True)
-
-		channel.start_consuming()
 
 	def consumeQueue(self):
 		connection = pika.BlockingConnection(
