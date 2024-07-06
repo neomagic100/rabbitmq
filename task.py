@@ -9,14 +9,15 @@ import click
 @click.option('--exchange', '-e', default='', show_default=True)
 @click.option('--type', '-t', default='', show_default=True)
 @click.option('--exclusive', '-x', default=False, show_default=True)
-def send(message, queue, durable, exchange, type, exclusive):
+@click.option('--severity', '-s', default='', show_default=True)
+def send(message, queue, durable, exchange, type, exclusive, severity):
 	conn = PikaConnSender(queueName=queue, 
 					exchange=(exchange, type),
 					durable=durable,
-					exclusive=exclusive)
+					exclusive=exclusive,
+     				severity=severity)
 	conn.publish(message)
 	return conn
-
 
 conn = send()
 conn.close()
