@@ -1,11 +1,7 @@
 #!/root/rabbitmq-scripts/env_pika/bin/python3
 from PikaConn import PikaConn
-import sys, os, time
+import sys, os
 import click
-import asyncio
-
-async def getMessage(conn):
-	await conn.subscribe()
 
 @click.command()
 @click.option('--queue', '-q', default='queue name', show_default=True)
@@ -27,7 +23,8 @@ def createConnection(queue, exchange, type, exclusive, durable):
 if __name__ == "__main__":
 	try:
 		conn = createConnection()
-		asyncio.run(getMessage(conn))
+		conn.subscribe()
+		conn.getChannel().start_consuming()
 	except KeyboardInterrupt:
 		print('user interrupted')
 		try:

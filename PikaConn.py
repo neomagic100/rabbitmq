@@ -1,6 +1,5 @@
 import pika
 import time
-import asyncio
 from config import config
 
 class PikaConn:
@@ -56,7 +55,7 @@ class PikaConn:
 
 		print (f" [x] Sent '{body}'")
   
-	async def subscribe(self):
+	def subscribe(self):
 		if self.isExchange:
 			tempQueueName = self.activeQueue.method.queue
 			self.channel.queue_bind(exchange=self.exchangeName, queue=tempQueueName)
@@ -79,12 +78,7 @@ class PikaConn:
     
 			self.channel.basic_qos(prefetch_count=1)
 			self.channel.basic_consume(queue=self.queueName, on_message_callback=callback)
-		
-	#	self.channel.start_consuming()
-		asyncio.run(self.consume())
 	
-	async def consume(self):
-		await self.channel.start_consuming()
 	def getChannel(self):
 		return self.channel
 
