@@ -18,6 +18,8 @@ def receive(queue, durable, exchange, type, exclusive):
 					durable=durable,
 					exclusive=exclusive)
 	conn.consume()
+
+receive()
 # connection = pika.BlockingConnection(
 #     pika.ConnectionParameters(host='localhost'))
 # channel = connection.channel()

@@ -1,5 +1,6 @@
 import pika
 import time
+import asyncio
 from config import config
 
 class PikaConnSender:
@@ -81,7 +82,6 @@ class PikaConnReceiver:
 		connection = pika.BlockingConnection(
     	pika.ConnectionParameters(host=config.HOST))
 		channel = connection.channel()
-
 		channel.queue_declare(queue=self.queueName, durable=True)
 		print(' [*] Waiting for messages. To exit press CTRL+C')
 
@@ -89,11 +89,8 @@ class PikaConnReceiver:
 		def callback(ch, method, properties, body):
 			print(f" [x] Received {body.decode()}")
 			time.sleep(body.count(b'.'))
-			print(" [x] Done")
 			ch.basic_ack(delivery_tag=method.delivery_tag)
 
-
-			channel.basic_qos(prefetch_count=1)
-			channel.basic_consume(queue=self.queueName, on_message_callback=callback)
-
-			channel.start_consuming()
+		channel.basic_qos(prefetch_count=1)
+		channel.basic_consume(queue=self.queueName, on_message_callback=callback)
+		channel.start_consuming()

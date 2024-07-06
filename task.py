@@ -13,8 +13,7 @@ def send(message, queue, durable, exchange, type, exclusive):
 	conn = PikaConnSender(queueName=queue, 
 					exchange=(exchange, type),
 					durable=durable,
-					exclusive=exclusive,
-					sending=True)
+					exclusive=exclusive)
 	conn.publish(message)
 	return conn
 
