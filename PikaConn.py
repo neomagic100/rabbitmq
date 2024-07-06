@@ -19,12 +19,12 @@ class PikaConn:
 
 		self.connection = pika.BlockingConnection(params)
 		self.channel = self.connection.channel()	
-		self.activeQueue = None
+		# self.activeQueue = None
   
-		if self.isExchange:
-			self.channel.exchange_declare(exchange = self.exchangeName, exchange_type= self.exchangeType)
-		elif not self.isExchange and self.queueName != "":
-			self.channel.queue_declare(queue=self.queueName, durable=durable)
+		# if self.isExchange:
+		# 	self.channel.exchange_declare(exchange = self.exchangeName, exchange_type= self.exchangeType)
+		# elif not self.isExchange and self.queueName != "":
+		# 	self.channel.queue_declare(queue=self.queueName, durable=durable)
 	
 	def setChannel(self):
 		self.channel.exchange_declare(exchange=self.exchangeName, exchange_type=self.exchangeType)

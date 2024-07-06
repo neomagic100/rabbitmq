@@ -7,7 +7,7 @@ import click
 @click.option('--queue', '-q', default='queue name', show_default=True)
 @click.option('--exchange', '-e', default='', show_default=True)
 @click.option('--type', '-t', default='', show_default=True)
-@click.option('--exclusive', '-x', default=False, show_default=True)
+@click.option('--exclusive', '-x', default=True, show_default=True)
 @click.option('--durable', '-d', default=False, show_default=True)
 def createConnection(queue, exchange, type, exclusive, durable):
 	exchangeTuple=(exchange, type)
@@ -20,7 +20,9 @@ def createConnection(queue, exchange, type, exclusive, durable):
 
 def subscribe(conn):
 	if conn.isExchange:
-		tempQueueName = conn.activeQueue.method.queue
+		conn.channel.exchange_declare(exchange = conn.exchangeName, exchange_type= conn.exchangeType)
+		result = conn.channel.queue_declare("", exclusive=conn.exclusive)
+		tempQueueName = result.method.queue
 		conn.channel.queue_bind(exchange=conn.exchangeName, queue=tempQueueName)
 		print(' [*] Waiting for logs. To exit press CTRL+C')
 
@@ -31,6 +33,7 @@ def subscribe(conn):
 			queue=tempQueueName, on_message_callback=callback, auto_ack=True)
 
 	else:
+		conn.channel.queue_declare(queue=conn.queueName, durable=conn.durable)
 		print(' [*] Waiting for logs. To exit press CTRL+C')
 
 		def callback(ch, method, properties, body):
