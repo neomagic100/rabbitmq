@@ -1,6 +1,5 @@
 #!/root/rabbitmq-scripts/env_pika/bin/python3
-from PikaConn import PikaConn
-from config import config
+from PikaConn import PikaConnSender
 import click
 
 @click.command()
@@ -11,7 +10,7 @@ import click
 @click.option('--type', '-t', default='', show_default=True)
 @click.option('--exclusive', '-x', default=False, show_default=True)
 def send(message, queue, durable, exchange, type, exclusive):
-	conn = PikaConn(queueName=queue, 
+	conn = PikaConnSender(queueName=queue, 
 					exchange=(exchange, type),
 					durable=durable,
 					exclusive=exclusive,
