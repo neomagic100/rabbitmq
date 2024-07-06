@@ -74,13 +74,32 @@ class PikaConnReceiver:
 			self.consumeExchange()
 		else:
 			self.consumeQueue()
-   
+
 	def consumeExchange(self):
-		pass
-	
+		connection = pika.BlockingConnection(
+    		pika.ConnectionParameters(host=config.HOST))
+		channel = connection.channel()
+
+		channel.exchange_declare(exchange=self.exchangeName, exchange_type=self.exchangeType)
+
+		result = channel.queue_declare(queue='', exclusive=True)
+		queue_name = result.method.queue
+
+		channel.queue_bind(exchange=self.exchangeName, queue=queue_name)
+
+		print(' [*] Waiting for logs. To exit press CTRL+C')
+
+		def callback(ch, method, properties, body):
+			print(f" [x] {body}")
+
+		channel.basic_consume(
+			queue=queue_name, on_message_callback=callback, auto_ack=True)
+
+		channel.start_consuming()
+
 	def consumeQueue(self):
 		connection = pika.BlockingConnection(
-    	pika.ConnectionParameters(host=config.HOST))
+    		pika.ConnectionParameters(host=config.HOST))
 		channel = connection.channel()
 		channel.queue_declare(queue=self.queueName, durable=True)
 		print(' [*] Waiting for messages. To exit press CTRL+C')

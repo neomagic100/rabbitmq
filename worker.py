@@ -13,30 +13,25 @@ import pika
 @click.option('--type', '-t', default='', show_default=True)
 @click.option('--exclusive', '-x', default=False, show_default=True)
 def receive(queue, durable, exchange, type, exclusive):
-	conn = PikaConnReceiver(queueName=queue, 
+    conn = PikaConnReceiver(queueName=queue, 
 					exchange=(exchange, type),
 					durable=durable,
-					exclusive=exclusive)
-	conn.consume()
+	        		exclusive=exclusive)
+    conn.consume()
+    return conn
 
-receive()
-# connection = pika.BlockingConnection(
-#     pika.ConnectionParameters(host='localhost'))
-# channel = connection.channel()
+connection = None
 
-# channel.exchange_declare(exchange='logs', exchange_type='fanout')
-
-# result = channel.queue_declare(queue='', exclusive=True)
-# queue_name = result.method.queue
-
-# channel.queue_bind(exchange='logs', queue=queue_name)
-
-# print(' [*] Waiting for logs. To exit press CTRL+C')
-
-# def callback(ch, method, properties, body):
-#     print(f" [x] {body}")
-
-# channel.basic_consume(
-#     queue=queue_name, on_message_callback=callback, auto_ack=True)
-
-# channel.start_consuming()
+try:
+    connection = receive()
+except KeyboardInterrupt:
+	print('user interrupted')
+	try:
+		print("sys.exit")
+		sys.exit(0)
+	except SystemExit:
+		print("SystemExit")
+		os._exit(0)
+	finally:
+		connection.close()
+		print("Connection closed")
