@@ -44,13 +44,11 @@ def subscribe(conn):
 		conn.channel.basic_qos(prefetch_count=1)
 		conn.channel.basic_consume(queue=conn.getQueueName(), on_message_callback=callback)
 
-	return conn.channel
-
 if __name__ == "__main__":
 	try:
 		conn = createConnection()
-		channel = conn.subscribe()
-		channel.start_consuming()
+		conn.subscribe()
+		conn.channel.start_consuming()
 	except KeyboardInterrupt:
 		print('user interrupted')
 		try:
