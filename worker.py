@@ -13,12 +13,14 @@ import pika
 @click.option('--type', '-t', default='', show_default=True)
 @click.option('--exclusive', '-x', default=False, show_default=True)
 @click.option('--severity', '-s', default=(), show_default=True, multiple = True)
-def receive(queue, durable, exchange, type, exclusive, severity):
+@click.option('--topic', '-p', default=(), show_default=True, multiple = True)
+def receive(queue, durable, exchange, type, exclusive, severity, topic):
     conn = PikaConnReceiver(queueName=queue, 
 					exchange=(exchange, type),
 					durable=durable,
 	        		exclusive=exclusive,
-                    severity=severity)
+                    severity=severity,
+		    topic = topic)
     conn.consume()
     return conn
 
