@@ -20,7 +20,7 @@ def createConnection(queue, exchange, type, exclusive, durable):
 
 if __name__ == "__main__":
 	try:
-		conn = createConnection(sys.argv)
+		conn = createConnection()
 		conn.subscribe()
 	except KeyboardInterrupt:
 		print('user interrupted')

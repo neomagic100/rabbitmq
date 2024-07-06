@@ -23,6 +23,8 @@ def send(message, queue, durable, exchange, type, exclusive, persist):
 					sending=True)
 	conn.publish(message, persist = persist)
 	print(f" [x] Sent {message}")
+    return conn
 
 if __name__ == "__main__":
-	send(sys.argv)
+	conn = send()
+    conn.close()
