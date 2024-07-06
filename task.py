@@ -1,5 +1,5 @@
 #!/root/rabbitmq-scripts/env_pika/bin/python3
-from PikaConn import PikaConnSender
+from PikaConnSender import PikaConnSender
 import click
 
 @click.command()
