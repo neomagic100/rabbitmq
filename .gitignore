@@ -2,3 +2,7 @@ __pycache__
 config*
 pika/
 rabbitmqadmin
+.venv
+venv
+old-*
+temp_*

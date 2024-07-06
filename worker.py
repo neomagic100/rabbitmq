@@ -1,10 +1,7 @@
 #!/root/rabbitmq-scripts/env_pika/bin/python3
-#import pika
-from PikaConn import PikaConnReceiver
-import sys, os, time
+from PikaConnReceiver import PikaConnReceiver
+import sys, os
 import click
-
-import pika
 
 @click.command()
 @click.option('--queue', '-q', default='', show_default=True)
